@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capture Packets</title>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        .packet {
+            background-color: #333;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+        .packet h4 {
+            margin-top: 0;
+            color: #00ff00;
+        }
+        .packet p, .packet pre {
+            color: #ffffff;
+        }
+        .packet pre {
+            white-space: pre-wrap;
+        }
+        label {
+            color: #ffffff;
+            font-weight: bold;
+        }
+        input[type=text], input[type=number], button {
+            background-color: #333;
+            color: #ffffff;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+        button {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Capture Packets</h1>
+
+    <form id="captureForm" onsubmit="startCapture(event)">
+        <label for="interface">Network Interface (e.g., 'en0')</label><br>
+        <input type="text" id="interface" name="interface" required><br><br>
+
+        <label for="start_ip">Start IP Address</label><br>
+        <input type="text" id="start_ip" name="start_ip" required><br><br>
+
+        <label for="end_ip">End IP Address</label><br>
+        <input type="text" id="end_ip" name="end_ip" required><br><br>
+
+        <label for="count">Number of Packets to Capture</label><br>
+        <input type="number" id="count" name="count" required><br><br>
+
+        <button type="submit">Start Capture</button>
+    </form>
+
+    <div id="packet-list">
+        {% if packets %}
+            {% for packet in packets %}
+                <div class="packet">
+                    <h4>IP Packet: {{ packet.src_ip }} &rarr; {{ packet.dst_ip }}</h4>
+                    <p><strong>Summary:</strong> {{ packet.summary }}</p>
+                    <pre><strong>Details:</strong><br>{{ packet.details }}</pre>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No packets captured yet.</p>
+        {% endif %}
+    </div>
+
+    <script>
+        function startCapture(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            // Collect form data
+            const formData = new FormData(document.getElementById('captureForm'));
+
+            // Send form data to Flask endpoint using AJAX
+            fetch('/start_capture', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                // Display alert with response message
+                alert(data);
+                // Refresh the page to update captured packets
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
